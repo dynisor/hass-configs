@@ -1,0 +1,89 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies: 
+    - 192.168.1.12
+
+template:
+  - sensor:
+        name: Grid Import Power
+        state_class: measurement
+        icon: mdi:transmission-tower
+        unit_of_measurement: W
+        device_class: power
+        state: >
+            {{ [0, states('sensor.none_123_1min') | int ] | max }}
+  - sensor:
+        name: Grid Export Power
+        state_class: measurement
+        icon: mdi:transmission-tower
+        unit_of_measurement: W
+        device_class: power
+        state: >
+            {{ [0, 0 - states('sensor.none_123_1min') | int ] | max }}     
+
+utility_meter:
+    daily_energy:
+        source: sensor.none_123_1d
+        net_consumption: true
+        cycle: daily
+        tariffs:
+          - onpeak
+          - offpeak
+          - superoffpeak
+    monthly_energy:
+        source: sensor.none_123_1d
+        net_consumption: true
+        cycle: monthly
+        tariffs:
+          - onpeak
+          - offpeak
+          - superoffpeak
+          
+sensor:
+  - platform: integration
+    name: Grid Import Energy
+    source: sensor.grid_import_power
+    unit_prefix: k
+    unit_time: h
+    method: left
+  - platform: integration
+    name: Grid Export Energy
+    source: sensor.grid_export_power
+    unit_prefix: k
+    unit_time: h
+    method: left
+  - platform: integration
+    name: Solar Production Energy
+    source: sensor.envoy_122107038752_current_power_production
+    unit_time: h
+    method: left
+  - platform: template
+    sensors:
+      daily_power_cost:
+        friendly_name: 'Daily Power Cost'
+        unit_of_measurement: '$'
+        icon_template: mdi:cash-multiple
+        value_template: >
+            {{  ((states('sensor.daily_energy_onpeak') | float * 0.38) + 
+                (states('sensor.daily_energy_offpeak') | float * 0.33) + 
+                (states('sendor.daily_energy_superoffpeak') | float * 0.32)) | round(2) }}
+      monthly_power_cost:
+        friendly_name: 'Monthly Power Cost'
+        unit_of_measurement: '$'
+        icon_template: mdi:cash-multiple
+        value_template: >
+            {{  ((states('sensor.monthly_energy_onpeak') | float * 0.38) +
+                (states('sensor.monthly_energy_offpeak') | float * 0.33) +
+                (states('sensor.monthly_energy_superoffpeak') | float * 0.32)) | round(2) }}

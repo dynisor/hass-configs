@@ -1,0 +1,7 @@
+.HA_VERSION
+.cloud/
+.storage/
+blueprints/
+custom_components/
+tts/
+home-assistant*

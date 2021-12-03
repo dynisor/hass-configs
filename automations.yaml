@@ -1,0 +1,81 @@
+- id: change_utility_tariff_peak
+  alias: Change SDGE TOU to ON-PEAK
+  trigger:
+    - platform: time
+      at: '16:00:00'
+  action:
+    - service: utility_meter.select_tariff
+      data:
+        entity_id:
+          - utility_meter.daily_energy
+          - utility_meter.monthly_energy
+        tariff: onpeak
+- id: change_utility_tariff_off_peak_night
+  alias: Change SDGE TOU to OFF-PEAK Nighttime
+  trigger:
+    - platform: time
+      at: '17:00:00'
+  action:
+    - service: utility_meter.select_tariff
+      data:
+        entity_id:
+          - utility_meter.daily_energy
+          - utility_meter.monthly_energy
+        tariff: offpeak
+- id: change_utility_tariff_off_peak_weekday
+  alias: Change SDGE TOU to OFF-PEAK Daytime for Weekdays
+  trigger:
+    - platform: time
+      at: '06:00:00'
+  condition:
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+  action:
+    - service: utility_meter.select_tariff
+      data:
+        entity_id:
+          - utility_meter.daily_energy
+          - utility_meter.monthly_energy
+        tariff: offpeak
+- id: change_utility_tariff_off_peak_weekend
+  alias: Change SDGE TOU to OFF-PEAK Daytime
+  trigger:
+    - platform: time
+      at: '14:00:00'
+  action:
+    - service: utility_meter.select_tariff
+      data:
+        entity_id:
+          - utility_meter.daily_energy
+          - utility_meter.monthly_energy
+        tariff: offpeak
+- id: change_utility_tariff_super_off_peak
+  alias: Change SDGE TOU to SUPER OFF-PEAK
+  trigger:
+    - platform: time
+      at: '00:00:00'
+  action:
+    - service: utility_meter.select_tariff
+      data:
+        entity_id:
+          - utility_meter.daily_energy
+          - utility_meter.monthly_energy
+        tariff: superoffpeak
+- id: change_utility_tariff_super_off_peak_march_april
+  alias: Change SDGE TOU to SUPER OFF-PEAK Daytime for Weekdays
+  trigger:
+    - platform: time
+      at: '10:00:00'
+  condition: '{{ now().month in [3, 4] }}'
+  action:
+    - service: utility_meter.select_tariff
+      data:
+        entity_id:
+          - utility_meter.daily_energy
+          - utility_meter.monthly_energy
+        tariff: superoffpeak
